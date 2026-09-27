@@ -109,21 +109,21 @@ A folder missing on GitHub means it wasn't submitted, even if it's on your lapto
 
 | Section | Points | Graded from |
 | --- | --- | --- |
-| Master Questions | 20 | Your answered questions (PDF) |
-| AgentDev | 20 | Your conversation log |
-| AgenticPipeline | 30 | Conversation log (20) + report (10) |
-| Homework | 30 | Conversation log (20) + report (10) |
+| Master Questions | 40 | Your answered questions (PDF) |
+| AgentDev | 15 | Your conversation log |
+| AgenticPipeline | 20 | Conversation log (15) + report (5) |
+| Homework | 25 | Conversation log (15) + report (10) |
 | **Total** | **100** | |
 
 Your conversation logs are encrypted and record your whole chat with the agent: your prompts, the tools it called, and its replies. They are decrypted after the deadline and graded on **how you directed the agent**, not on the agent's own writing. Your tool code has no separate points: a tool that breaks but that you debug thoughtfully with the agent can still earn full conversation credit. Logs and reports are graded against fixed rubrics.
 
 The agent won't stop you from bad habits in the moment: it doesn't refuse vague or copied prompts, or requests to skip steps. None of that blocks you during the chat, but all of it counts afterward, when your log is graded.
 
-### Master Questions (20 points)
+### Master Questions (40 points)
 
 Your answers to the 10 questions in `DM2026-Lab1-Master-Questions.docx`, submitted as one PDF. Each question points to a `Question N (take home)` spot in the Master notebook.
 
-**Scoring:** each question is worth 2 points, split evenly across its sub-questions. For example, a question with 2 parts gives 1 point per part; one with 3 parts gives about 0.67 points per part.
+**Scoring:** each question is worth 4 points, split evenly across its sub-questions. For example, a question with 2 parts gives 2 points per part; one with 3 parts gives about 1.33 points per part.
 
 Answer every part of each question, changing parameters in the notebook when the question asks (thresholds, `k`, `minSup`, and so on).
 
@@ -150,7 +150,7 @@ Answer every part of each question, changing parameters in the notebook when the
 
 Write in English. Keep answers concise and specific.
 
-### AgentDev log (20 points)
+### AgentDev log (15 points)
 
 What earns credit:
 
@@ -164,7 +164,7 @@ What earns credit:
     - discuss the design: ask why, push back when something looks off;
     - test it: have a test written and actually run, and engage with the result.
 
-### AgenticPipeline log (20 points) and Homework log (20 points)
+### AgenticPipeline log (15 points) and Homework log (15 points)
 
 Both use the same criteria:
 
@@ -176,7 +176,7 @@ Both use the same criteria:
 - **Progression.** Follow the pipeline order and build on earlier results.
 - **Analytical follow-through.** Connect results across turns into an actual analysis, instead of a list of unrelated tool calls.
 
-### AgenticPipeline report (10 points) and Homework report (10 points)
+### AgenticPipeline report (5 points) and Homework report (10 points)
 
 Each report is its own file in `reports/`, created by the notebook's "Create your report file" cell. Write it in that file, not in the notebook. Both reports are graded on:
 
