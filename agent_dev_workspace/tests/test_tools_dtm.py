@@ -1,46 +1,79 @@
+import numpy as np
 import pytest
-from pathlib import Path
-import importlib.util
 from agent_pipeline.session_state import SessionState
-
-# Locate premade_tools relative to current file's workspace directory
-workspace_dir = Path(__file__).resolve().parents[1]
-premade_path = workspace_dir / "premade_tools" / "load_dataset_tool.py"
-
-spec_premade = importlib.util.spec_from_file_location("load_dataset_tool_module", premade_path)
-premade_mod = importlib.util.module_from_spec(spec_premade)
-spec_premade.loader.exec_module(premade_mod)
-
+from agent_pipeline.workspace_loader import load_workspace_tools
 from tools_dtm import make_tools
 
 
-def test_build_dtm_tool():
+def test_build_dtm_tool_known_answer_4():
     session = SessionState()
-
-    # Load fixture dataset into session
-    premade_tools = premade_mod.make_tools(session)
+    premade_tools, _ = load_workspace_tools("premade_tools", session)
     load_dataset_tool = next(t for t in premade_tools if t.name == "load_dataset_tool")
-    load_dataset_tool.invoke(
-        {
-            "file_path": "agent_dev/sample_fixture.csv",
-            "text_column": "text",
-            "label_column": "label",
-        }
-    )
 
-    # Load and execute student's build_dtm_tool
-    dtm_tools = make_tools(session)
-    build_dtm_tool = next(t for t in dtm_tools if t.name == "build_dtm_tool")
+    tools = make_tools(session)
+    build_dtm_tool = next(t for t in tools if t.name == "build_dtm_tool")
 
-    result = build_dtm_tool.invoke({})
+    load_dataset_tool.invoke({
+        "file_path": "agent_dev/sample_fixture.csv",
+        "text_column": "text",
+        "label_column": "label"
+    })
 
-    # Check known answer #4 specifications
-    assert result["n_documents"] == 8
-    assert result["n_terms"] == 5
-    assert result["non_zero"] == 21
-    assert result["total_elements"] == 40
-    assert result["sparsity_pct"] == pytest.approx(47.5, abs=1e-2)
+    res = build_dtm_tool.invoke({})
+    assert res["n_documents"] == 8
+    assert res["n_terms"] == 5
+    assert res["non_zero"] == 21
+    assert res["total_elements"] == 40
+    assert pytest.approx(res["sparsity_pct"], abs=1e-3) == 47.5
+    assert session.feature_names == ["alpha", "always", "beta", "delta", "gamma"]
 
-    # Check vocabulary contents and vectorizer artifact
-    assert sorted(session.feature_names) == ["alpha", "always", "beta", "delta", "gamma"]
-    assert session.artifacts.get("count_vectorizer") is not None
+
+def test_term_frequency_tool_known_answer_14():
+    session = SessionState()
+    premade_tools, _ = load_workspace_tools("premade_tools", session)
+    load_dataset_tool = next(t for t in premade_tools if t.name == "load_dataset_tool")
+
+    tools = make_tools(session)
+    build_dtm_tool = next(t for t in tools if t.name == "build_dtm_tool")
+    term_frequency_tool = next(t for t in tools if t.name == "term_frequency_tool")
+
+    load_dataset_tool.invoke({
+        "file_path": "agent_dev/sample_fixture.csv",
+        "text_column": "text",
+        "label_column": "label"
+    })
+    build_dtm_tool.invoke({})
+
+    res = term_frequency_tool.invoke({})
+    expected_freqs = {
+        "alpha": 6,
+        "always": 7,
+        "beta": 3,
+        "delta": 4,
+        "gamma": 7,
+    }
+    assert res["frequencies"] == expected_freqs
+
+
+def test_dtm_heatmap_tool_known_answer_21():
+    session = SessionState()
+    premade_tools, _ = load_workspace_tools("premade_tools", session)
+    load_dataset_tool = next(t for t in premade_tools if t.name == "load_dataset_tool")
+
+    tools = make_tools(session)
+    build_dtm_tool = next(t for t in tools if t.name == "build_dtm_tool")
+    dtm_heatmap_tool = next(t for t in tools if t.name == "dtm_heatmap_tool")
+
+    load_dataset_tool.invoke({
+        "file_path": "agent_dev/sample_fixture.csv",
+        "text_column": "text",
+        "label_column": "label"
+    })
+    build_dtm_tool.invoke({})
+
+    # Slice corner n_terms=2, n_documents=3
+    res_slice = dtm_heatmap_tool.invoke({"n_terms": 2, "n_documents": 3})
+    assert res_slice["sliced_matrix"] == [[3, 1], [2, 1], [1, 1]]
+    assert res_slice["terms"] == ["alpha", "always"]
+    assert res_slice["n_documents"] == 3
+    assert session.pending_figure is not None
